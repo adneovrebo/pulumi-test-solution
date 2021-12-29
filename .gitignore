@@ -1,0 +1,8 @@
+# Builds and packages
+/bin/
+/node_modules/
+*/node_modules/
+*/dist/
+
+# Individual files
+.env

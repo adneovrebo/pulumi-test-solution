@@ -1,0 +1,3 @@
+name: plumi-testing
+runtime: nodejs
+description: A minimal AWS TypeScript Pulumi program
