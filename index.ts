@@ -2,13 +2,14 @@ import * as pulumi from "@pulumi/pulumi";
 import { buildReactApp } from "./buildApp";
 import { buildAPI } from "./buildAPI";
 import { Bucket } from "@pulumi/aws/s3";
+import { createS3CloudfrontDistribution } from "./cloudfront";
 
 // ----------------------------------------------------------------------------
 // API
 // ----------------------------------------------------------------------------
 // Export the load balancer's address so that it's easy to access.
 const apiLoadBalancer = buildAPI();
-export const url = pulumi.interpolate`http://${apiLoadBalancer.endpoint.hostname}`;
+export const apiURL = pulumi.interpolate`https://${apiLoadBalancer.endpoint.hostname}`;
 
 // ----------------------------------------------------------------------------
 // React application
@@ -21,11 +22,14 @@ const appBucket = new Bucket("my-bucket", {
   },
 });
 
+// Build react-app and upload to bucket
 buildReactApp({
   bucket: appBucket,
-  apiEndpoint: url,
+  apiEndpoint: apiURL,
 });
 
-// Export the name of the bucket and endpoint for index.html
-export const bucketName = appBucket.id;
-export const bucketEndpoint = pulumi.interpolate`http://${appBucket.websiteEndpoint}`;
+// Create cloudfront distribution
+const appDistribution = createS3CloudfrontDistribution(appBucket);
+
+// Export endpoint for application
+export const reactAppURL = pulumi.interpolate`https://${appDistribution.domainName}`;
